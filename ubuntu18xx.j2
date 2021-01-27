@@ -16,10 +16,10 @@ ISODIR=/mnt/iso
 FSFILE="$ISODIR/casper/filesystem.squashfs"
 FSDIR=/mnt/fs
 
-HOSTNAME=netris-sw
-USERNAME=netris
-USERPASS=newNet0ps
-ROOTPASS=newNet0ps
+HOSTNAME={{ hostname }}
+USERNAME={{ username }}
+USERPASS={{ user_pass }}
+ROOTPASS={{ root_pass }}
 
 cleanup() {
     chroot "$TDIR" sh -c 'umount /proc; umount /sys; umount /dev/pts'
@@ -121,8 +121,15 @@ iface lo inet loopback
 
 # The primary network interface
 auto eth0
+{% if sw_mng_dhcp is defined and sw_mng_dhcp is sameas true %}
+iface eth0 inet dhcp
+{% else %}
 iface eth0 inet static
-        address 10.12.0.10/24
+        address {{ sw_mng_address }}
+{% if sw_mng_gateway is defined and sw_mng_gateway|length %}
+        up ip ro add {{ controller_address }} via {{ sw_mng_gateway }}
+{% endif %}
+{% endif %}
 
 
 
@@ -161,14 +168,14 @@ EOF
 
 # ADD HTTP PROXY ENV
 cat << EOF > "$TDIR/etc/profile.d/http_proxy.sh"
-export http_proxy=http://10.10.0.100:3128
-export https_proxy=http://10.10.0.100:3128
+export http_proxy=http://{{ controller_address }}:3128
+export https_proxy=http://{{ controller_address }}:3128
 EOF
 
 # ADD HTTP PROXY APT
 cat << EOF > "$TDIR/etc/apt/apt.conf.d/netris-proxy"
-Acquire::http::Proxy "http://10.10.0.100:3128";
-Acquire::https::Proxy "http://10.10.0.100:3128";
+Acquire::http::Proxy "http://{{ controller_address }}:3128";
+Acquire::https::Proxy "http://{{ controller_address }}:3128";
 EOF
 
 # ADD NETRIS REPOSITORY

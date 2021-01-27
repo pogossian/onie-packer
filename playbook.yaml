@@ -1,0 +1,16 @@
+
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - vars.yaml
+  tasks:
+  - name: Ensure INSTDIR exists
+    file:
+      path: installers
+      state: directory
+
+  - name: Creating ubuntu18xx-iso
+    template:
+      src: ubuntu18xx.j2
+      dest: installers/ubuntu18xx-iso

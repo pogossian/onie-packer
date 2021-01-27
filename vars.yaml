@@ -1,0 +1,8 @@
+hostname: netris-sw
+username: netris
+user_pass: newNet0ps
+root_pass: newNet0ps
+sw_mng_address: 10.10.0.10/24
+sw_mng_gateway: ""
+sw_mng_dhcp: False
+controller_address: 10.10.0.100
