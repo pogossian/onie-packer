@@ -97,9 +97,9 @@ chroot "$TDIR" sh -c 'systemctl disable apparmor.service'
 chroot "$TDIR" sh -c 'systemctl disable apt-daily-upgrade apt-daily-upgrade.timer'
 chroot "$TDIR" sh -c 'systemctl disable open-iscsi.service open-vm-tools.service iscsid.socket'
 chroot "$TDIR" sh -c 'systemctl disable motd-news.timer'
-chroot "$TDIR" sh -c 'systemctl disable networkd-dispatcher.service'
-chroot "$TDIR" sh -c 'systemctl unmask networking'
-chroot "$TDIR" sh -c 'systemctl enable networking'
+# chroot "$TDIR" sh -c 'systemctl disable networkd-dispatcher.service'
+# chroot "$TDIR" sh -c 'systemctl unmask networking'
+# chroot "$TDIR" sh -c 'systemctl enable networking'
 
 # DISABLE DYNAMIC MOTD
 sed -i -- 's/ENABLED=1/ENABLED=0/g' "$TDIR/etc/default/motd-news"
@@ -122,11 +122,19 @@ iface lo inet loopback
 # The primary network interface
 auto eth0
 iface eth0 inet static
-        address 10.10.0.10/24
+        address 10.254.96.17/24
 
 
 
 source /etc/network/interfaces.d/*
+EOF
+
+# CONFIGURE THE LOOPBACK IP ADDRESS
+chroot "$TDIR" sh -c "mkdir /etc/network/interfaces.d"
+cat << EOF > "$TDIR/etc/network/interfaces.d/lo"
+auto lo
+iface lo inet loopback
+  address 10.254.97.17/32
 EOF
 
 # CONFIGURE HOSTNAME
@@ -161,20 +169,20 @@ EOF
 
 # ADD HTTP PROXY ENV
 cat << EOF > "$TDIR/etc/profile.d/http_proxy.sh"
-export http_proxy=http://10.10.0.100:3128
-export https_proxy=http://10.10.0.100:3128
+export http_proxy=http://10.254.96.10:3128
+export https_proxy=http://10.254.96.10:3128
 EOF
 
 # ADD HTTP PROXY APT
 cat << EOF > "$TDIR/etc/apt/apt.conf.d/netris-proxy"
-Acquire::http::Proxy "http://10.10.0.100:3128";
-Acquire::https::Proxy "http://10.10.0.100:3128";
+Acquire::http::Proxy "http://10.254.96.10:3128";
+Acquire::https::Proxy "http://10.254.96.10:3128";
 EOF
 
-# ADD NETRIS REPOSITORY
-cat << EOF > "$TDIR/etc/apt/sources.list.d/netris.list"
-deb http://repo.netris.ai/repo/ bionic main
-EOF
+# # ADD NETRIS REPOSITORY
+# cat << EOF > "$TDIR/etc/apt/sources.list.d/netris.list"
+# deb http://repo.netris.ai/repo/ bionic main
+# EOF
 
 # ADD SIMPLE NETWORK CONFIGURATION SCRIPT FOR PERSISTENCE
 cat << EOF > "$TDIR/etc/rc.local"
@@ -211,7 +219,7 @@ for iface in \$(ls /sys/class/net/ | grep ^swp); do
 done
 
 # Install netris agent
-wget -qO - http://repo.netris.ai/repo/public.key | apt-key add -
+# wget -qO - http://repo.netris.ai/repo/public.key | apt-key add -
 apt-get update
 apt-get install netris-sw -y
 

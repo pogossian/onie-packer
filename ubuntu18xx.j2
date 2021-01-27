@@ -97,9 +97,9 @@ chroot "$TDIR" sh -c 'systemctl disable apparmor.service'
 chroot "$TDIR" sh -c 'systemctl disable apt-daily-upgrade apt-daily-upgrade.timer'
 chroot "$TDIR" sh -c 'systemctl disable open-iscsi.service open-vm-tools.service iscsid.socket'
 chroot "$TDIR" sh -c 'systemctl disable motd-news.timer'
-chroot "$TDIR" sh -c 'systemctl disable networkd-dispatcher.service'
-chroot "$TDIR" sh -c 'systemctl unmask networking'
-chroot "$TDIR" sh -c 'systemctl enable networking'
+# chroot "$TDIR" sh -c 'systemctl disable networkd-dispatcher.service'
+# chroot "$TDIR" sh -c 'systemctl unmask networking'
+# chroot "$TDIR" sh -c 'systemctl enable networking'
 
 # DISABLE DYNAMIC MOTD
 sed -i -- 's/ENABLED=1/ENABLED=0/g' "$TDIR/etc/default/motd-news"
@@ -134,6 +134,14 @@ iface eth0 inet static
 
 
 source /etc/network/interfaces.d/*
+EOF
+
+# CONFIGURE THE LOOPBACK IP ADDRESS
+chroot "$TDIR" sh -c "mkdir /etc/network/interfaces.d"
+cat << EOF > "$TDIR/etc/network/interfaces.d/lo"
+auto lo
+iface lo inet loopback
+  address {{ sw_lo_address }}/32
 EOF
 
 # CONFIGURE HOSTNAME
@@ -178,10 +186,10 @@ Acquire::http::Proxy "http://{{ controller_address }}:3128";
 Acquire::https::Proxy "http://{{ controller_address }}:3128";
 EOF
 
-# ADD NETRIS REPOSITORY
-cat << EOF > "$TDIR/etc/apt/sources.list.d/netris.list"
-deb http://repo.netris.ai/repo/ bionic main
-EOF
+# # ADD NETRIS REPOSITORY
+# cat << EOF > "$TDIR/etc/apt/sources.list.d/netris.list"
+# deb http://repo.netris.ai/repo/ bionic main
+# EOF
 
 # ADD SIMPLE NETWORK CONFIGURATION SCRIPT FOR PERSISTENCE
 cat << EOF > "$TDIR/etc/rc.local"
@@ -218,7 +226,7 @@ for iface in \$(ls /sys/class/net/ | grep ^swp); do
 done
 
 # Install netris agent
-wget -qO - http://repo.netris.ai/repo/public.key | apt-key add -
+# wget -qO - http://repo.netris.ai/repo/public.key | apt-key add -
 apt-get update
 apt-get install netris-sw -y
 

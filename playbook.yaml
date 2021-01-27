@@ -14,3 +14,6 @@
     template:
       src: ubuntu18xx.j2
       dest: installers/ubuntu18xx-iso
+
+  - name: Run pack script
+    shell: ./onie_pack.sh {{ iso_path }}
