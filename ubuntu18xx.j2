@@ -121,7 +121,7 @@ iface lo inet loopback
 
 # The primary network interface
 auto eth0
-{% if sw_mng_dhcp is defined and sw_mng_dhcp is sameas true %}
+{% if sw_mng_dhcp is defined and sw_mng_dhcp|string|lower == 'true' %}
 iface eth0 inet dhcp
 {% else %}
 iface eth0 inet static
