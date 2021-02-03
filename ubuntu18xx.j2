@@ -90,7 +90,7 @@ chroot "$TDIR" sh -c "ssh-keygen -A"
 chroot "$TDIR" sh -c "apt purge snapd squashfs-tools cloud-init unattended-upgrades apport -y"
 
 # REMOVE NETPLAN FILES
-chroot "$TDIR" sh -c "rm -f /etc/netplan/*"
+# chroot "$TDIR" sh -c "rm -f /etc/netplan/*"
 
 # CONFIGURE ADDITIONAL SERVICES
 chroot "$TDIR" sh -c 'systemctl disable apparmor.service'
@@ -138,11 +138,6 @@ EOF
 
 # CONFIGURE THE LOOPBACK IP ADDRESS
 chroot "$TDIR" sh -c "mkdir /etc/network/interfaces.d"
-cat << EOF > "$TDIR/etc/network/interfaces.d/lo"
-auto lo
-iface lo inet loopback
-  address {{ sw_lo_address }}/32
-EOF
 
 # CONFIGURE HOSTNAME
 chroot "$TDIR" sh -c "echo $HOSTNAME > /etc/hostname"
@@ -175,16 +170,16 @@ net.ipv4.tcp_max_syn_backlog=5000
 EOF
 
 # ADD HTTP PROXY ENV
-cat << EOF > "$TDIR/etc/profile.d/http_proxy.sh"
-export http_proxy=http://{{ controller_address }}:3128
-export https_proxy=http://{{ controller_address }}:3128
-EOF
+# cat << EOF > "$TDIR/etc/profile.d/http_proxy.sh"
+# export http_proxy=http://{{ controller_address }}:3128
+# export https_proxy=http://{{ controller_address }}:3128
+# EOF
 
 # ADD HTTP PROXY APT
-cat << EOF > "$TDIR/etc/apt/apt.conf.d/netris-proxy"
-Acquire::http::Proxy "http://{{ controller_address }}:3128";
-Acquire::https::Proxy "http://{{ controller_address }}:3128";
-EOF
+# cat << EOF > "$TDIR/etc/apt/apt.conf.d/netris-proxy"
+# Acquire::http::Proxy "http://{{ controller_address }}:3128";
+# Acquire::https::Proxy "http://{{ controller_address }}:3128";
+# EOF
 
 # # ADD NETRIS REPOSITORY
 # cat << EOF > "$TDIR/etc/apt/sources.list.d/netris.list"
