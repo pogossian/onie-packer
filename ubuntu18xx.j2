@@ -222,8 +222,8 @@ done
 
 # Install netris agent
 # wget -qO - http://repo.netris.ai/repo/public.key | apt-key add -
-apt-get update
-apt-get install netris-sw -y
+# apt-get update
+# apt-get install netris-sw -y
 
 EOF
 chroot "$TDIR" sh -c 'chmod +x /etc/rc.local'
