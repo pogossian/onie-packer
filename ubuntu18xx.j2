@@ -90,14 +90,14 @@ chroot "$TDIR" sh -c "ssh-keygen -A"
 chroot "$TDIR" sh -c "apt purge snapd squashfs-tools cloud-init unattended-upgrades apport -y"
 
 # REMOVE NETPLAN FILES
-# chroot "$TDIR" sh -c "rm -f /etc/netplan/*"
+chroot "$TDIR" sh -c "rm -f /etc/netplan/*"
 
 # CONFIGURE ADDITIONAL SERVICES
 chroot "$TDIR" sh -c 'systemctl disable apparmor.service'
 chroot "$TDIR" sh -c 'systemctl disable apt-daily-upgrade apt-daily-upgrade.timer'
 chroot "$TDIR" sh -c 'systemctl disable open-iscsi.service open-vm-tools.service iscsid.socket'
 chroot "$TDIR" sh -c 'systemctl disable motd-news.timer'
-# chroot "$TDIR" sh -c 'systemctl disable networkd-dispatcher.service'
+chroot "$TDIR" sh -c 'systemctl disable networkd-dispatcher.service'
 # chroot "$TDIR" sh -c 'systemctl unmask networking'
 # chroot "$TDIR" sh -c 'systemctl enable networking'
 
@@ -181,10 +181,19 @@ EOF
 # Acquire::https::Proxy "http://{{ controller_address }}:3128";
 # EOF
 
-# # ADD NETRIS REPOSITORY
-# cat << EOF > "$TDIR/etc/apt/sources.list.d/netris.list"
-# deb http://repo.netris.ai/repo/ bionic main
-# EOF
+# ADD NETRIS REPOSITORY
+chroot "$TDIR" sh -c 'wget -qO - http://repo.netris.ai/repo/public.key | apt-key add -'
+
+cat << EOF > "$TDIR/etc/apt/sources.list.d/netris.list"
+deb http://repo.netris.ai/repo/ bionic main
+EOF
+
+# INSTALL ifupdown2
+chroot "$TDIR" sh -c 'apt update'
+chroot "$TDIR" sh -c 'apt install ifupdown2 -y'
+
+# PURGE NETPLAN
+chroot "$TDIR" sh -c 'apt purge netplan.io -y'
 
 # ADD SIMPLE NETWORK CONFIGURATION SCRIPT FOR PERSISTENCE
 cat << EOF > "$TDIR/etc/rc.local"
@@ -221,7 +230,6 @@ for iface in \$(ls /sys/class/net/ | grep ^swp); do
 done
 
 # Install netris agent
-# wget -qO - http://repo.netris.ai/repo/public.key | apt-key add -
 # apt-get update
 # apt-get install netris-sw -y
 
